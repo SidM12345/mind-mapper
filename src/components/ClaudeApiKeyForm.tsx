@@ -1,11 +1,11 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card } from "./ui/card";
-import { Key } from "lucide-react";
+import { Key, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "./ui/alert";
 
 interface ClaudeApiKeyFormProps {
   onApiKeySubmit: (apiKey: string) => void;
@@ -14,21 +14,43 @@ interface ClaudeApiKeyFormProps {
 const ClaudeApiKeyForm = ({ onApiKeySubmit }: ClaudeApiKeyFormProps) => {
   const [apiKey, setApiKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const validateApiKey = (key: string): boolean => {
+    // Claude API keys typically start with "sk-ant-" and are at least 32 chars
+    if (!key.startsWith("sk-ant-")) {
+      setError("Claude API keys should start with 'sk-ant-'");
+      return false;
+    }
+    
+    if (key.length < 32) {
+      setError("API key appears to be too short");
+      return false;
+    }
+    
+    setError("");
+    return true;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     
     if (!apiKey.trim()) {
-      toast.error("Please enter your Claude API key");
+      setError("Please enter your Claude API key");
+      return;
+    }
+
+    if (!validateApiKey(apiKey)) {
       return;
     }
 
     setIsLoading(true);
     
-    // Simulate checking the API key validity
+    // We'll do a basic format check but not a live check to avoid unnecessary API calls
     setTimeout(() => {
       onApiKeySubmit(apiKey);
-      toast.success("API key saved");
+      toast.success("API key saved successfully");
       setIsLoading(false);
     }, 500);
   };
@@ -43,6 +65,13 @@ const ClaudeApiKeyForm = ({ onApiKeySubmit }: ClaudeApiKeyFormProps) => {
           </p>
         </div>
         
+        {error && (
+          <Alert variant="destructive" className="py-2">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="space-y-2">
           <Label 
             htmlFor="apiKey" 
@@ -53,14 +82,18 @@ const ClaudeApiKeyForm = ({ onApiKeySubmit }: ClaudeApiKeyFormProps) => {
           <Input
             id="apiKey"
             type="password"
-            placeholder="Enter your Claude API key"
+            placeholder="sk-ant-..."
             value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => {
+              setApiKey(e.target.value);
+              if (error) validateApiKey(e.target.value);
+            }}
             className="text-base h-10 bg-white/50 border-muted"
           />
-          <p className="text-xs text-muted-foreground">
-            Your API key is stored locally and never sent to our servers
-          </p>
+          <div className="text-xs text-muted-foreground space-y-2">
+            <p>Your API key is stored locally and never sent to our servers</p>
+            <p>You can get an API key from the <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Anthropic Console</a></p>
+          </div>
         </div>
         
         <Button 

@@ -1,20 +1,27 @@
-
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Textarea } from "../components/ui/textarea";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
 
 interface TopicFormProps {
   onSubmit: (topic: string, currentKnowledge: string) => void;
 }
 
 const TopicForm = ({ onSubmit }: TopicFormProps) => {
-  const [topic, setTopic] = useState("");
-  const [currentKnowledge, setCurrentKnowledge] = useState("");
+  const [topic, setTopic] = useState("Machine Learning");
+  const [currentKnowledge, setCurrentKnowledge] = useState(
+    "I understand the basics of supervised learning and regression. I've built simple models using linear regression and know about training/test splits. I've heard about neural networks but haven't used them yet. I also know a bit about classification problems and decision trees."
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,8 +41,38 @@ const TopicForm = ({ onSubmit }: TopicFormProps) => {
     }, 1000);
   };
 
+  const useDemoData = () => {
+    setTopic("Machine Learning");
+    setCurrentKnowledge(
+      "I understand the basics of supervised learning and regression. I've built simple models using linear regression and know about training/test splits. I've heard about neural networks but haven't used them yet. I also know a bit about classification problems and decision trees."
+    );
+    toast.success("Demo data loaded");
+  };
+
   return (
     <Card className="glass-panel w-full max-w-xl p-8 animate-fade-up">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold">Your Knowledge Profile</h3>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={useDemoData}
+                className="text-xs flex items-center gap-1 text-muted-foreground"
+              >
+                <Lightbulb className="h-3.5 w-3.5" />
+                Load Demo
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">Load a Machine Learning example</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2 animate-fade-up delay-100">
           <Label 
@@ -65,8 +102,11 @@ const TopicForm = ({ onSubmit }: TopicFormProps) => {
             placeholder="Describe your current understanding, concepts you're familiar with, or areas you're confused about..."
             value={currentKnowledge}
             onChange={(e) => setCurrentKnowledge(e.target.value)}
-            className="min-h-[120px] resize-none text-base bg-white/50 border-muted"
+            className="min-h-[150px] resize-none text-base bg-white/50 border-muted"
           />
+          <p className="text-xs text-muted-foreground italic mt-1">
+            Be specific about what you know and don't know. This helps identify your knowledge gaps more effectively.
+          </p>
         </div>
         
         <Button 

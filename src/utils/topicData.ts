@@ -1,9 +1,9 @@
-
 export interface TopicNode {
   id: string;
   label: string;
   type: 'core' | 'subtopic' | 'concept';
   status?: 'known' | 'gap' | 'neutral';
+  confidence?: number;
   description?: string;
 }
 
@@ -24,30 +24,104 @@ const topicRepository: Record<string, TopicData> = {
   "machine learning": {
     nodes: [
       { id: "ml", label: "Machine Learning", type: "core", status: "neutral" },
+      
+      // Core ML Paradigms
       { id: "supervised", label: "Supervised Learning", type: "subtopic", status: "neutral" },
       { id: "unsupervised", label: "Unsupervised Learning", type: "subtopic", status: "neutral" },
       { id: "reinforcement", label: "Reinforcement Learning", type: "subtopic", status: "neutral" },
+      { id: "deep", label: "Deep Learning", type: "subtopic", status: "neutral" },
+      { id: "foundations", label: "ML Foundations", type: "subtopic", status: "neutral" },
+      
+      // Supervised Learning concepts
       { id: "regression", label: "Regression", type: "concept", status: "neutral" },
       { id: "classification", label: "Classification", type: "concept", status: "neutral" },
+      { id: "linear_reg", label: "Linear Regression", type: "concept", status: "neutral" },
+      { id: "logistic_reg", label: "Logistic Regression", type: "concept", status: "neutral" },
+      { id: "decision_trees", label: "Decision Trees", type: "concept", status: "neutral" },
+      { id: "random_forest", label: "Random Forests", type: "concept", status: "neutral" },
+      { id: "svm", label: "Support Vector Machines", type: "concept", status: "neutral" },
+      
+      // Unsupervised Learning concepts
       { id: "clustering", label: "Clustering", type: "concept", status: "neutral" },
       { id: "dimensionality", label: "Dimensionality Reduction", type: "concept", status: "neutral" },
+      { id: "kmeans", label: "K-means", type: "concept", status: "neutral" },
+      { id: "hierarchical", label: "Hierarchical Clustering", type: "concept", status: "neutral" },
+      { id: "pca", label: "PCA", type: "concept", status: "neutral" },
+      { id: "anomaly", label: "Anomaly Detection", type: "concept", status: "neutral" },
+      
+      // Reinforcement Learning concepts
+      { id: "qlearning", label: "Q-Learning", type: "concept", status: "neutral" },
+      { id: "policy_gradient", label: "Policy Gradient", type: "concept", status: "neutral" },
+      { id: "mdp", label: "Markov Decision Process", type: "concept", status: "neutral" },
+      { id: "rl_agents", label: "RL Agents", type: "concept", status: "neutral" },
+      
+      // Deep Learning concepts
       { id: "neural", label: "Neural Networks", type: "concept", status: "neutral" },
-      { id: "deep", label: "Deep Learning", type: "concept", status: "neutral" },
+      { id: "cnn", label: "Convolutional NNs", type: "concept", status: "neutral" },
+      { id: "rnn", label: "Recurrent NNs", type: "concept", status: "neutral" },
+      { id: "transformers", label: "Transformers", type: "concept", status: "neutral" },
+      { id: "gans", label: "GANs", type: "concept", status: "neutral" },
+      { id: "transfer", label: "Transfer Learning", type: "concept", status: "neutral" },
+      
+      // Foundations concepts
       { id: "evaluation", label: "Model Evaluation", type: "concept", status: "neutral" },
+      { id: "feature_eng", label: "Feature Engineering", type: "concept", status: "neutral" },
+      { id: "regularization", label: "Regularization", type: "concept", status: "neutral" },
       { id: "overfitting", label: "Overfitting & Bias", type: "concept", status: "neutral" },
+      { id: "optimization", label: "Optimization Algorithms", type: "concept", status: "neutral" },
+      { id: "validation", label: "Cross-Validation", type: "concept", status: "neutral" },
     ],
     edges: [
+      // Main paradigms connection to core
       { id: "e-ml-supervised", source: "ml", target: "supervised" },
       { id: "e-ml-unsupervised", source: "ml", target: "unsupervised" },
       { id: "e-ml-reinforcement", source: "ml", target: "reinforcement" },
+      { id: "e-ml-deep", source: "ml", target: "deep" },
+      { id: "e-ml-foundations", source: "ml", target: "foundations" },
+      
+      // Supervised learning connections
       { id: "e-supervised-regression", source: "supervised", target: "regression" },
       { id: "e-supervised-classification", source: "supervised", target: "classification" },
+      { id: "e-regression-linear_reg", source: "regression", target: "linear_reg" },
+      { id: "e-classification-logistic_reg", source: "classification", target: "logistic_reg" },
+      { id: "e-classification-decision_trees", source: "classification", target: "decision_trees" },
+      { id: "e-decision_trees-random_forest", source: "decision_trees", target: "random_forest" },
+      { id: "e-classification-svm", source: "classification", target: "svm" },
+      
+      // Unsupervised learning connections
       { id: "e-unsupervised-clustering", source: "unsupervised", target: "clustering" },
       { id: "e-unsupervised-dimensionality", source: "unsupervised", target: "dimensionality" },
-      { id: "e-classification-neural", source: "classification", target: "neural" },
-      { id: "e-neural-deep", source: "neural", target: "deep" },
-      { id: "e-supervised-evaluation", source: "supervised", target: "evaluation" },
-      { id: "e-evaluation-overfitting", source: "evaluation", target: "overfitting" },
+      { id: "e-clustering-kmeans", source: "clustering", target: "kmeans" },
+      { id: "e-clustering-hierarchical", source: "clustering", target: "hierarchical" },
+      { id: "e-dimensionality-pca", source: "dimensionality", target: "pca" },
+      { id: "e-unsupervised-anomaly", source: "unsupervised", target: "anomaly" },
+      
+      // Reinforcement learning connections
+      { id: "e-reinforcement-qlearning", source: "reinforcement", target: "qlearning" },
+      { id: "e-reinforcement-policy_gradient", source: "reinforcement", target: "policy_gradient" },
+      { id: "e-reinforcement-mdp", source: "reinforcement", target: "mdp" },
+      { id: "e-reinforcement-rl_agents", source: "reinforcement", target: "rl_agents" },
+      
+      // Deep learning connections
+      { id: "e-deep-neural", source: "deep", target: "neural" },
+      { id: "e-neural-cnn", source: "neural", target: "cnn" },
+      { id: "e-neural-rnn", source: "neural", target: "rnn" },
+      { id: "e-neural-transformers", source: "neural", target: "transformers" },
+      { id: "e-deep-gans", source: "deep", target: "gans" },
+      { id: "e-deep-transfer", source: "deep", target: "transfer" },
+      
+      // Foundations connections
+      { id: "e-foundations-evaluation", source: "foundations", target: "evaluation" },
+      { id: "e-foundations-feature_eng", source: "foundations", target: "feature_eng" },
+      { id: "e-foundations-regularization", source: "foundations", target: "regularization" },
+      { id: "e-foundations-overfitting", source: "foundations", target: "overfitting" },
+      { id: "e-foundations-optimization", source: "foundations", target: "optimization" },
+      { id: "e-evaluation-validation", source: "evaluation", target: "validation" },
+      
+      // Cross-paradigm connections
+      { id: "e-deep-supervised", source: "deep", target: "supervised" },
+      { id: "e-neural-regression", source: "neural", target: "regression" },
+      { id: "e-neural-classification", source: "neural", target: "classification" },
     ]
   },
   "react": {
