@@ -6,7 +6,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { ChevronRight } from "lucide-react";
-import { toast } from "../components/ui/sonner";
+import { toast } from "sonner";
 
 interface TopicFormProps {
   onSubmit: (topic: string, currentKnowledge: string) => void;

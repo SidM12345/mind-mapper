@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { TopicData, getTopicData } from "../utils/topicData";
+import { analyzeWithClaude, ClaudeAnalysisResponse } from "../utils/claudeApi";
+import { toast } from "sonner";
 
 type Status = "known" | "gap" | "neutral";
 
@@ -19,36 +21,90 @@ interface AnalysisResult {
 const useKnowledgeAnalysis = () => {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [claudeApiKey, setClaudeApiKey] = useState<string | null>(
+    localStorage.getItem("claudeApiKey")
+  );
 
-  const analyzeKnowledge = (topic: string, currentKnowledge: string) => {
+  // Save API key to local storage when it changes
+  useEffect(() => {
+    if (claudeApiKey) {
+      localStorage.setItem("claudeApiKey", claudeApiKey);
+    }
+  }, [claudeApiKey]);
+
+  const analyzeKnowledge = async (topic: string, currentKnowledge: string) => {
     setIsAnalyzing(true);
     
-    // Simulating an async operation for analysis
-    setTimeout(() => {
-      // Get the base topic structure
-      const topicData = getTopicData(topic);
+    try {
+      let topicData: TopicData;
       
-      // Process the user's current knowledge
-      const knowledgeKeywords = extractKeywords(currentKnowledge);
-      
-      // Analyze which concepts are known vs. gaps
-      const analyzedData = analyzeTopicWithKeywords(topicData, knowledgeKeywords);
+      // If Claude API key is available, use Claude for analysis
+      if (claudeApiKey) {
+        try {
+          const claudeResponse = await analyzeWithClaude({
+            topic,
+            currentKnowledge,
+            apiKey: claudeApiKey
+          });
+          
+          // Convert Claude response to our TopicData format
+          topicData = convertClaudeResponseToTopicData(claudeResponse, topic);
+        } catch (error) {
+          console.error("Claude analysis failed:", error);
+          toast.error("Claude analysis failed. Falling back to built-in analysis.");
+          
+          // Fallback to built-in analysis if Claude fails
+          topicData = analyzeWithBuiltInLogic(topic, currentKnowledge);
+        }
+      } else {
+        // Use built-in analysis if no Claude API key
+        topicData = analyzeWithBuiltInLogic(topic, currentKnowledge);
+      }
       
       // Calculate statistics
-      const statistics = calculateStatistics(analyzedData);
+      const statistics = calculateStatistics(topicData);
       
       // Separate concepts by status
-      const { knownConcepts, gapConcepts } = categorizeConceptsByStatus(analyzedData);
+      const { knownConcepts, gapConcepts } = categorizeConceptsByStatus(topicData);
       
       setResult({
-        topicData: analyzedData,
+        topicData,
         statistics,
         knownConcepts,
         gapConcepts
       });
-      
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      toast.error("Failed to analyze your knowledge");
+    } finally {
       setIsAnalyzing(false);
-    }, 1500);
+    }
+  };
+
+  // Convert Claude response to our TopicData format
+  const convertClaudeResponseToTopicData = (
+    claudeResponse: ClaudeAnalysisResponse,
+    topicName: string
+  ): TopicData => {
+    return {
+      nodes: claudeResponse.nodes.map(node => ({
+        ...node,
+        description: undefined
+      })),
+      edges: claudeResponse.edges
+    };
+  };
+
+  // Built-in analysis logic (fallback if Claude is not available)
+  const analyzeWithBuiltInLogic = (topic: string, currentKnowledge: string): TopicData => {
+    // Get the base topic structure
+    const topicData = getTopicData(topic);
+    
+    // Process the user's current knowledge
+    const knowledgeKeywords = extractKeywords(currentKnowledge);
+    
+    // Analyze which concepts are known vs. gaps
+    return analyzeTopicWithKeywords(topicData, knowledgeKeywords);
   };
 
   // Extract keywords from user's knowledge description
@@ -124,7 +180,9 @@ const useKnowledgeAnalysis = () => {
   return {
     analyzeKnowledge,
     result,
-    isAnalyzing
+    isAnalyzing,
+    hasClaudeApiKey: !!claudeApiKey,
+    setClaudeApiKey
   };
 };
 
